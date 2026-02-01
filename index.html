@@ -1,44 +1,248 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-    <meta charset="UTF-8">
-    <title>ShadowDev Games</title>
-
-    <style>
-        body {
-            background: #111;
-            color: white;
-            font-family: Arial;
-            text-align: center;
-        }
-
-        button {
-            font-size: 20px;
-            padding: 15px;
-            margin: 10px;
-            cursor: pointer;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>ShadowDev Games</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    body {
+        background: #111;
+        color: white;
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+    }
+    button, select {
+        font-size: 20px;
+        padding: 10px;
+        margin: 10px;
+        cursor: pointer;
+    }
+    #gameContainer, #gameOver, #instructions {
+        margin-top: 20px;
+    }
+    #gameOver {
+        display: none;
+        font-size: 30px;
+        color: red;
+    }
+    canvas {
+        background: black;
+        display: block;
+        margin: 20px auto;
+        max-width: 90%;
+        height: auto;
+    }
+    #instructions {
+        font-size: 18px;
+        margin-top: 20px;
+    }
+    .key-explain {
+        text-align: left;
+        max-width: 400px;
+        margin: 10px auto;
+        background: #222;
+        padding: 10px;
+        border-radius: 10px;
+    }
+</style>
 </head>
-
 <body>
 
-    <h1>🎮 ShadowDev Games</h1>
-    <p>Welkom op mijn website!</p>
+<h1>🎮 ShadowDev Games</h1>
 
-    <button onclick="klik()">Klik mij!</button>
+<!-- Taalkeuze -->
+<select id="language" onchange="updateLanguage()">
+    <option value="nl" selected>Nederlands</option>
+    <option value="en">English</option>
+</select>
 
-    <h2 id="score">Score: 0</h2>
+<!-- Startscherm -->
+<div id="startScreen">
+    <p id="chooseGame">Kies een game:</p>
+    <button id="clickBtnStart" onclick="startGame('click')">Klik Game</button>
+    <button id="snakeBtnStart" onclick="startGame('snake')">Snake Game</button>
 
-    <script>
-        let score = 0;
+    <div id="instructions">
+        <div class="key-explain" id="escExplain"><strong>ESC:</strong> Stop de game / Game Over</div>
+        <div class="key-explain" id="arrowExplain"><strong>Pijltjestoetsen:</strong> Snake bewegen</div>
+    </div>
+</div>
 
-        function klik() {
+<div id="gameContainer"></div>
+<div id="score"></div>
+<div id="gameOver"></div>
+
+<script>
+let gameRunning = false;
+let score = 0;
+let currentGame = null;
+let language = "nl"; // default taal
+
+// Teksten per taal
+const texts = {
+    nl: {
+        chooseGame: "Kies een game:",
+        clickGame: "Klik Game",
+        snakeGame: "Snake Game",
+        esc: "ESC: Stop de game / Game Over",
+        arrows: "Pijltjestoetsen: Snake bewegen",
+        gameOver: "Game Over! Score: "
+    },
+    en: {
+        chooseGame: "Choose a game:",
+        clickGame: "Click Game",
+        snakeGame: "Snake Game",
+        esc: "ESC: Stop game / Game Over",
+        arrows: "Arrow keys: Move Snake",
+        gameOver: "Game Over! Score: "
+    }
+};
+
+// Update taal op startscherm
+function updateLanguage(){
+    language = document.getElementById("language").value;
+    document.getElementById("chooseGame").innerText = texts[language].chooseGame;
+    document.getElementById("clickBtnStart").innerText = texts[language].clickGame;
+    document.getElementById("snakeBtnStart").innerText = texts[language].snakeGame;
+    document.getElementById("escExplain").innerHTML = "<strong>ESC:</strong> " + texts[language].esc;
+    document.getElementById("arrowExplain").innerHTML = "<strong>Pijltjestoetsen:</strong> " + texts[language].arrows;
+    if(!gameRunning && document.getElementById("gameOver").style.display === "block"){
+        document.getElementById("gameOver").innerText = texts[language].gameOver + score;
+    }
+}
+
+// Start de gekozen game
+function startGame(game){
+    gameRunning = true;
+    score = 0;
+    currentGame = game;
+
+    // Verberg startscherm
+    document.getElementById("startScreen").style.display="none";
+
+    document.getElementById("gameOver").style.display = "none";
+    document.getElementById("score").innerText = "Score: 0";
+    document.getElementById("gameContainer").innerHTML = "";
+
+    if(game === 'click') startClickGame();
+    if(game === 'snake') startSnakeGame();
+}
+
+// ---------- Klik Game ----------
+function startClickGame(){
+    let btn = document.createElement("button");
+    btn.id = "clickBtn";
+    btn.innerText = texts[language].clickGame;
+    btn.onclick = function(){
+        if(gameRunning){
             score++;
-            document.getElementById("score").innerText =
-                "Score: " + score;
+            document.getElementById("score").innerText = "Score: " + score;
         }
-    </script>
+    };
+    document.getElementById("gameContainer").appendChild(btn);
+}
+
+// ---------- Snake Game ----------
+function startSnakeGame(){
+    const canvas = document.createElement("canvas");
+    canvas.width = 400;
+    canvas.height = 400;
+    canvas.id = "snakeCanvas";
+    document.getElementById("gameContainer").appendChild(canvas);
+    const ctx = canvas.getContext("2d");
+
+    const box = 20;
+    let snake = [{x: 8*box, y: 8*box}];
+    let food = {x: Math.floor(Math.random()*20)*box, y: Math.floor(Math.random()*20)*box};
+    let dir = "RIGHT";
+
+    document.addEventListener("keydown", function(event){
+        if(!gameRunning) return;
+
+        if(event.key === "ArrowUp" && dir !== "DOWN") dir="UP";
+        if(event.key === "ArrowDown" && dir !== "UP") dir="DOWN";
+        if(event.key === "ArrowLeft" && dir !== "RIGHT") dir="LEFT";
+        if(event.key === "ArrowRight" && dir !== "LEFT") dir="RIGHT";
+        if(event.key === "Escape") stopGame();
+    });
+
+    function draw(){
+        if(!gameRunning) return;
+        ctx.fillStyle = "black";
+        ctx.fillRect(0,0,canvas.width,canvas.height);
+
+        // Teken slang
+        for(let i=0;i<snake.length;i++){
+            ctx.fillStyle = "green";
+            ctx.fillRect(snake[i].x, snake[i].y, box, box);
+
+            // Tong verschijnt soms
+            if(i===snake.length-1){
+                if(Math.random()<0.5){
+                    ctx.fillStyle="red";
+                    ctx.fillRect(snake[i].x+box-5, snake[i].y+5,5,5);
+                }
+            }
+        }
+
+        // Teken appel
+        ctx.fillStyle="red";
+        ctx.fillRect(food.x, food.y, box, box);
+
+        // Verplaats slang
+        let snakeX = snake[snake.length-1].x;
+        let snakeY = snake[snake.length-1].y;
+
+        if(dir==="LEFT") snakeX -= box;
+        if(dir==="RIGHT") snakeX += box;
+        if(dir==="UP") snakeY -= box;
+        if(dir==="DOWN") snakeY += box;
+
+        // Eet appel
+        if(snakeX===food.x && snakeY===food.y){
+            score++;
+            document.getElementById("score").innerText = "Score: " + score;
+            food = {x: Math.floor(Math.random()*20)*box, y: Math.floor(Math.random()*20)*box};
+        } else {
+            snake.shift();
+        }
+
+        let newHead = {x: snakeX, y: snakeY};
+
+        // Check game over
+        if(snakeX<0 || snakeX>=canvas.width || snakeY<0 || snakeY>=canvas.height || snake.some(seg => seg.x===newHead.x && seg.y===newHead.y)){
+            stopGame();
+        }
+
+        snake.push(newHead);
+
+        if(gameRunning) setTimeout(draw,100);
+    }
+
+    draw();
+}
+
+// ---------- Stop Game ----------
+function stopGame(){
+    gameRunning=false;
+    document.getElementById("gameContainer").innerHTML="";
+    document.getElementById("score").innerText = "";
+    document.getElementById("gameOver").style.display="block";
+    document.getElementById("gameOver").innerText = texts[language].gameOver + score;
+
+    // Laat startscherm terugkomen
+    document.getElementById("startScreen").style.display="block";
+}
+
+// ESC werkt ook voor Klik-game
+document.addEventListener('keydown', function(event){
+    if(event.key==="Escape" && gameRunning){
+        stopGame();
+    }
+});
+</script>
 
 </body>
 </html>
