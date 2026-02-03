@@ -5,47 +5,120 @@
 <title>ShadowDev Games</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
+* { box-sizing: border-box; margin:0; padding:0; }
+
 body {
-    background: #111;
+    background: linear-gradient(135deg, #0f172a, #020617);
     color: white;
-    font-family: Arial, sans-serif;
+    font-family: "Segoe UI", Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
     text-align: center;
-    margin: 0;
-    padding: 0;
-}
-button, select {
-    font-size: 20px;
-    padding: 15px;
-    margin: 10px;
-    cursor: pointer;
-}
-#gameContainer, #gameOver, #instructions {
-    margin-top: 20px;
-}
-#gameOver {
-    display: none;
-    font-size: 30px;
-    color: red;
-}
-canvas {
-    background: black;
-    display: block;
-    margin: 20px auto;
-    max-width: 90%;
-    height: auto;
-}
-.gameOption {
-    display: inline-block;
-    margin: 40px 20px 20px 20px; /* boven rechts onder links */
-    text-align: center;
-}
-#touchControls {
-    margin-top: 10px;
-}
-.touchBtn {
-    font-size: 35px;
+    position: relative;
     padding: 20px;
-    margin: 10px;
+}
+
+/* Titel */
+h1 { font-size: 2.8em; margin-bottom: 20px; }
+
+/* Taal keus rechtsboven */
+#languageContainer {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+#languageContainer img { width:24px; height:16px; cursor:pointer; }
+#languageContainer select { padding: 4px; border-radius: 6px; border: none; font-size: 14px; cursor: pointer; }
+
+/* Start scherm */
+#startScreen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 25px;
+}
+
+/* Games naast elkaar */
+#gameOptionsContainer {
+    display: flex;
+    flex-direction: row;
+    gap: 30px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* Game kaart */
+.gameOption {
+    background: rgba(255,255,255,0.05);
+    border-radius: 20px;
+    padding: 25px;
+    width: 180px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.6);
+    transition: 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.gameOption:hover {
+    transform: translateY(-8px) scale(1.05);
+    box-shadow: 0 0 25px #38bdf8;
+}
+.gameOption img { width: 90px; margin-bottom: 15px; }
+
+/* Knoppen */
+button {
+    font-size: 18px;
+    padding: 12px 22px;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    background: linear-gradient(135deg,#38bdf8,#0ea5e9);
+    color: black;
+    font-weight: bold;
+    transition: 0.3s;
+}
+button:hover {
+    transform: scale(1.1);
+    background: linear-gradient(135deg,#7dd3fc,#38bdf8);
+}
+
+/* Score & Game Over */
+#score { font-size: 22px; margin-top: 40px; }
+#gameOver {
+    font-size: 36px;
+    color: #f87171;
+    background: rgba(0,0,0,0.7);
+    padding: 20px 40px;
+    border-radius: 15px;
+    display: none;
+    position: fixed;
+    top: 55%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 999;
+}
+
+/* Canvas */
+canvas { border-radius: 15px; box-shadow: 0 0 20px #0ea5e9; margin-top: 20px; }
+
+/* Touch buttons */
+#touchControls { margin-top: 20px; display: flex; justify-content: center; gap: 10px; }
+.touchBtn { font-size: 20px; padding: 10px; border-radius: 10px; border: none; background: #38bdf8; color: black; cursor: pointer; }
+.touchBtn:active { background: #0ea5e9; }
+
+/* Mobiel */
+@media (max-width:600px){
+    h1 { font-size: 2em; }
+    .gameOption { width: 150px; padding: 18px; }
+    button { font-size: 16px; }
+    #gameOptionsContainer { flex-direction: column; gap:15px; }
 }
 </style>
 </head>
@@ -53,31 +126,31 @@ canvas {
 
 <h1>🎮 ShadowDev Games</h1>
 
-<!-- Taalkeuze -->
-<select id="language" onchange="updateLanguage()">
-    <option value="nl" selected>Nederlands</option>
-    <option value="en">English</option>
-</select>
+<!-- Taal keuze -->
+<div id="languageContainer">
+    <img src="https://flagcdn.com/w40/nl.png" alt="NL" onclick="setLanguage('nl')">
+    <img src="https://flagcdn.com/w40/gb.png" alt="EN" onclick="setLanguage('en')">
+    <select id="language" onchange="updateLanguage()">
+        <option value="nl" selected>Nederlands</option>
+        <option value="en">English</option>
+    </select>
+</div>
 
-<!-- Startscherm -->
 <div id="startScreen">
     <p id="chooseGame">Kies een game:</p>
-
-    <!-- Klik Game -->
-    <div class="gameOption">
-        <img src="logos/klik-logo.png" alt="Klik Game Logo" width="80" height="80">
-        <button id="clickBtnStart" onclick="startGame('click')">Klik Game</button>
+    <div id="gameOptionsContainer">
+        <div class="gameOption">
+            <img src="logos/klik-logo.png" alt="Klik Game Logo">
+            <button id="clickBtnStart" onclick="startGame('click')">Klik Game</button>
+        </div>
+        <div class="gameOption">
+            <img src="logos/snake-logo.png" alt="Snake Game Logo">
+            <button id="snakeBtnStart" onclick="startGame('snake')">Snake Game</button>
+        </div>
     </div>
-
-    <!-- Snake Game -->
-    <div class="gameOption">
-        <img src="logos/snake-logo.png" alt="Snake Game Logo" width="80" height="80">
-        <button id="snakeBtnStart" onclick="startGame('snake')">Snake Game</button>
-    </div>
-
     <div id="instructions">
-        <div class="key-explain" id="escExplain"><strong>ESC:</strong> Stop de game / Game Over</div>
-        <div class="key-explain" id="arrowExplain"><strong>Pijltjestoetsen/WASD:</strong> Snake bewegen</div>
+        <p id="escExplain"><strong>ESC:</strong> Stop de game / Game Over</p>
+        <p id="arrowExplain"><strong>Pijltjestoetsen/WASD:</strong> Snake bewegen</p>
     </div>
 </div>
 
@@ -86,183 +159,182 @@ canvas {
 <div id="gameOver"></div>
 
 <script>
-let gameRunning = false;
-let score = 0;
-let currentGame = null;
-let language = "nl";
+// === Variabelen ===
+let gameRunning=false;
+let score=0;
+let currentGame=null;
+let language="nl";
+let dir="RIGHT";
+let rebirth=0;
+let rebirthCount=0;
+const maxRebirths=10;
 
-// Teksten per taal
-const texts = {
-    nl: {
-        chooseGame: "Kies een game:",
-        clickGame: "Klik Game",
-        snakeGame: "Snake Game",
-        esc: "ESC: Stop de game / Game Over",
-        arrows: "Pijltjestoetsen/WASD: Snake bewegen",
-        gameOver: "Game Over! Score: "
-    },
-    en: {
-        chooseGame: "Choose a game:",
-        clickGame: "Click Game",
-        snakeGame: "Snake Game",
-        esc: "ESC: Stop game / Game Over",
-        arrows: "Arrow keys/WASD: Move Snake",
-        gameOver: "Game Over! Score: "
-    }
+// Click Game upgrades
+let clickUpgrades=[
+    {name:"Auto Clicker", cost:50, cps:1, level:0, maxLevel:5},
+    {name:"Multiplier", cost:100, cps:2, level:0, maxLevel:10},
+    {name:"CPS Boost", cost:500, cps:5, level:0, maxLevel:5}
+];
+
+const texts={
+    nl:{chooseGame:"Kies een game:", clickGame:"Klik Game", snakeGame:"Snake Game", esc:"Stop de game / Game Over", arrows:"Snake bewegen", gameOver:"Game Over! Score: "},
+    en:{chooseGame:"Choose a game:", clickGame:"Click Game", snakeGame:"Snake Game", esc:"Stop game / Game Over", arrows:"Move snake", gameOver:"Game Over! Score: "}
 };
 
-// Update taal
+// === Language ===
+function setLanguage(lang){
+    document.getElementById("language").value=lang; 
+    updateLanguage();
+}
 function updateLanguage(){
-    language = document.getElementById("language").value;
-    document.getElementById("chooseGame").innerText = texts[language].chooseGame;
-    document.getElementById("clickBtnStart").innerText = texts[language].clickGame;
-    document.getElementById("snakeBtnStart").innerText = texts[language].snakeGame;
-    document.getElementById("escExplain").innerHTML = "<strong>ESC:</strong> " + texts[language].esc;
-    document.getElementById("arrowExplain").innerHTML = "<strong>Pijltjestoetsen/WASD:</strong> " + texts[language].arrows;
-    if(!gameRunning && document.getElementById("gameOver").style.display==="block"){
-        document.getElementById("gameOver").innerText = texts[language].gameOver + score;
-    }
+    language=document.getElementById("language").value;
+    document.getElementById("chooseGame").innerText=texts[language].chooseGame;
+    document.getElementById("clickBtnStart").innerText=texts[language].clickGame;
+    document.getElementById("snakeBtnStart").innerText=texts[language].snakeGame;
+    document.getElementById("escExplain").innerHTML="<strong>ESC:</strong> "+texts[language].esc;
+    document.getElementById("arrowExplain").innerHTML="<strong>Pijltjestoetsen/WASD:</strong> "+texts[language].arrows;
 }
 
-// Start game
+// === Start game ===
 function startGame(game){
-    gameRunning = true;
-    score = 0;
-    currentGame = game;
+    gameRunning=true;
+    score=0;
+    currentGame=game;
+    dir="RIGHT";
     document.getElementById("startScreen").style.display="none";
     document.getElementById("gameOver").style.display="none";
     document.getElementById("score").innerText="Score: 0";
     document.getElementById("gameContainer").innerHTML="";
-
-    if(game==='click') startClickGame();
-    if(game==='snake') startSnakeGame();
+    if(game==="click") startClickGame();
+    if(game==="snake") startSnakeGame();
 }
 
-// -------- Klik Game --------
+// === Click Game ===
 function startClickGame(){
-    let btn = document.createElement("button");
-    btn.id="clickBtn";
-    btn.innerText = texts[language].clickGame;
-    btn.style.fontSize="30px";
-    btn.onclick = function(){
-        if(gameRunning){
-            score++;
-            document.getElementById("score").innerText = "Score: "+score;
+    const container=document.getElementById("gameContainer");
+    const btn=document.createElement("button");
+    btn.style.fontSize="32px";
+    btn.innerText=texts[language].clickGame;
+    btn.onclick=()=>{score++; updateScore();};
+    container.appendChild(btn);
+
+    const upgradesDiv=document.createElement("div");
+    upgradesDiv.id="clickUpgradesDiv";
+    upgradesDiv.style.marginTop="20px";
+    container.appendChild(upgradesDiv);
+    renderUpgrades();
+
+    setInterval(()=>{
+        if(!gameRunning) return;
+        let totalCPS=clickUpgrades.reduce((sum,u)=>sum+u.level*u.cps,0);
+        if(totalCPS>0){score+=totalCPS; updateScore();}
+    },1000);
+}
+
+function renderUpgrades(){
+    const div=document.getElementById("clickUpgradesDiv");
+    div.innerHTML="";
+    clickUpgrades.forEach((u)=>{
+        const b=document.createElement("button");
+        b.innerText=`${u.name} (lvl ${u.level}) Cost: ${u.cost}`;
+        b.disabled=score<u.cost||u.level>=u.maxLevel;
+        b.onclick=()=>{
+            if(score>=u.cost && u.level<u.maxLevel){
+                score-=u.cost; u.level++; u.cost=Math.floor(u.cost*1.5);
+                updateScore(); renderUpgrades();
+            }
+        };
+        div.appendChild(b);
+    });
+
+    const rebBtn=document.createElement("button");
+    rebBtn.innerText=`Rebirth (${rebirthCount})`;
+    rebBtn.style.marginTop="10px";
+    rebBtn.disabled=rebirthCount>=maxRebirths;
+    rebBtn.onclick=()=>{
+        if(rebirthCount<maxRebirths){
+            rebirth++; rebirthCount++; score=0;
+            clickUpgrades.forEach(u=>{u.level=0; u.cost=Math.floor(u.cost/Math.pow(1.5,u.level));});
+            renderUpgrades(); updateScore();
         }
     };
-    document.getElementById("gameContainer").appendChild(btn);
+    div.appendChild(rebBtn);
 }
 
-// -------- Snake Game --------
+function updateScore(){document.getElementById("score").innerText=`Score: ${Math.floor(score)}`;}
+
+// === Snake Game ===
 function startSnakeGame(){
-    const canvas = document.createElement("canvas");
-    canvas.id="snakeCanvas";
-    // Responsive canvas
-    canvas.width = Math.min(window.innerWidth*0.9,400);
-    canvas.height = canvas.width;
-    document.getElementById("gameContainer").appendChild(canvas);
-    const ctx = canvas.getContext("2d");
+    const container=document.getElementById("gameContainer");
+    const canvas=document.createElement("canvas");
+    canvas.width=Math.min(window.innerWidth*0.9,400);
+    canvas.height=canvas.width;
+    container.appendChild(canvas);
+    const ctx=canvas.getContext("2d");
 
-    const box = canvas.width / 20;
-    let snake=[{x:8*box, y:8*box}];
-    let food={x:Math.floor(Math.random()*20)*box, y:Math.floor(Math.random()*20)*box};
-    let dir="RIGHT";
+    const box=canvas.width/20;
+    let snake=[{x:10*box,y:10*box}];
+    let food={x:5*box,y:5*box};
 
-    // Key controls
-    document.addEventListener("keydown", function(e){
-        if(!gameRunning) return;
-
-        // Pijltjestoetsen
-        if(e.key==="ArrowUp" && dir!=="DOWN") dir="UP";
-        if(e.key==="ArrowDown" && dir!=="UP") dir="DOWN";
-        if(e.key==="ArrowLeft" && dir!=="RIGHT") dir="LEFT";
-        if(e.key==="ArrowRight" && dir!=="LEFT") dir="RIGHT";
-
-        // WASD toetsen
-        if((e.key==="w" || e.key==="W") && dir!=="DOWN") dir="UP";
-        if((e.key==="s" || e.key==="S") && dir!=="UP") dir="DOWN";
-        if((e.key==="a" || e.key==="A") && dir!=="RIGHT") dir="LEFT";
-        if((e.key==="d" || e.key==="D") && dir!=="LEFT") dir="RIGHT";
-
-        if(e.key==="Escape") stopGame();
+    const touch=document.createElement("div");
+    touch.id="touchControls";
+    ["⬆️","⬇️","⬅️","➡️"].forEach((t,i)=>{
+        const b=document.createElement("button");
+        b.className="touchBtn";
+        b.innerText=t;
+        b.addEventListener("touchstart",e=>{e.preventDefault(); dir=["UP","DOWN","LEFT","RIGHT"][i];});
+        touch.appendChild(b);
     });
-
-    // Touch controls
-    const touchDiv = document.createElement("div");
-    touchDiv.id="touchControls";
-    const directions=["UP","DOWN","LEFT","RIGHT"];
-    const arrowSymbols=["⬆️","⬇️","⬅️","➡️"];
-    directions.forEach((d,i)=>{
-        let btn=document.createElement("button");
-        btn.className="touchBtn";
-        btn.innerText=arrowSymbols[i];
-        btn.addEventListener("touchstart",(e)=>{
-            e.preventDefault(); // voorkomt scrollen
-            if(dir!==opposite(d)) dir=d;
-        });
-        touchDiv.appendChild(btn);
-    });
-    document.getElementById("gameContainer").appendChild(touchDiv);
-
-    function opposite(d){ return {UP:"DOWN", DOWN:"UP", LEFT:"RIGHT", RIGHT:"LEFT"}[d]; }
+    container.appendChild(touch);
 
     function draw(){
         if(!gameRunning) return;
-        ctx.fillStyle="black";
-        ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle="black"; ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle="green"; snake.forEach(s=>ctx.fillRect(s.x,s.y,box,box));
+        ctx.fillStyle="red"; ctx.fillRect(food.x,food.y,box,box);
 
-        // Snake
-        for(let i=0;i<snake.length;i++){
-            ctx.fillStyle="green";
-            ctx.fillRect(snake[i].x, snake[i].y, box, box);
-            // Tong (soms)
-            if(i===snake.length-1 && Math.random()<0.5){
-                ctx.fillStyle="red";
-                ctx.fillRect(snake[i].x+box-5, snake[i].y+5,5,5);
-            }
-        }
+        let head={...snake[snake.length-1]};
+        if(dir==="UP") head.y-=box;
+        if(dir==="DOWN") head.y+=box;
+        if(dir==="LEFT") head.x-=box;
+        if(dir==="RIGHT") head.x+=box;
 
-        // Food
-        ctx.fillStyle="red";
-        ctx.fillRect(food.x, food.y, box, box);
-
-        let headX=snake[snake.length-1].x;
-        let headY=snake[snake.length-1].y;
-        if(dir==="LEFT") headX-=box;
-        if(dir==="RIGHT") headX+=box;
-        if(dir==="UP") headY-=box;
-        if(dir==="DOWN") headY+=box;
-
-        // Eat
-        if(headX===food.x && headY===food.y){
-            score++;
-            document.getElementById("score").innerText="Score: "+score;
+        if(head.x===food.x && head.y===food.y){
+            score++; updateScore();
             food={x:Math.floor(Math.random()*20)*box, y:Math.floor(Math.random()*20)*box};
         } else snake.shift();
 
-        let newHead={x:headX, y:headY};
-
-        // Collision
-        if(headX<0 || headX>=canvas.width || headY<0 || headY>=canvas.height || snake.some(s=>s.x===newHead.x && s.y===newHead.y)){
-            stopGame();
+        if(head.x<0||head.y<0||head.x>=canvas.width||head.y>=canvas.height||snake.some(s=>s.x===head.x&&s.y===head.y)){
+            stopGame(); return;
         }
-
-        snake.push(newHead);
-        if(gameRunning) setTimeout(draw,150); // snelheid
+        snake.push(head);
+        setTimeout(draw,160);
     }
     draw();
 }
 
-// -------- Stop Game --------
+// === Stop game ===
 function stopGame(){
     gameRunning=false;
     document.getElementById("gameContainer").innerHTML="";
     document.getElementById("score").innerText="";
     document.getElementById("gameOver").style.display="block";
-    document.getElementById("gameOver").innerText=texts[language].gameOver+score;
-    document.getElementById("startScreen").style.display="block";
+    document.getElementById("gameOver").innerText=texts[language].gameOver+Math.floor(score);
+    document.getElementById("startScreen").style.display="flex";
+    currentGame=null;
 }
 
+// === Global keydown ===
+document.addEventListener("keydown",e=>{
+    if(e.key==="Escape"){if(gameRunning) stopGame(); return;}
+    if(currentGame==="snake" && gameRunning){
+        let k=e.key.toLowerCase();
+        if((k==="arrowup"||k==="w") && dir!=="DOWN") dir="UP";
+        if((k==="arrowdown"||k==="s") && dir!=="UP") dir="DOWN";
+        if((k==="arrowleft"||k==="a") && dir!=="RIGHT") dir="LEFT";
+        if((k==="arrowright"||k==="d") && dir!=="LEFT") dir="RIGHT";
+    }
+});
 </script>
 </body>
 </html>
