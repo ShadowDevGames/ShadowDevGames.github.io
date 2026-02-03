@@ -43,9 +43,9 @@ canvas {
     margin-top: 10px;
 }
 .touchBtn {
-    font-size: 25px;
-    padding: 15px;
-    margin: 5px;
+    font-size: 35px;
+    padding: 20px;
+    margin: 10px;
 }
 </style>
 </head>
@@ -77,7 +77,7 @@ canvas {
 
     <div id="instructions">
         <div class="key-explain" id="escExplain"><strong>ESC:</strong> Stop de game / Game Over</div>
-        <div class="key-explain" id="arrowExplain"><strong>Pijltjestoetsen:</strong> Snake bewegen</div>
+        <div class="key-explain" id="arrowExplain"><strong>Pijltjestoetsen/WASD:</strong> Snake bewegen</div>
     </div>
 </div>
 
@@ -98,7 +98,7 @@ const texts = {
         clickGame: "Klik Game",
         snakeGame: "Snake Game",
         esc: "ESC: Stop de game / Game Over",
-        arrows: "Pijltjestoetsen: Snake bewegen",
+        arrows: "Pijltjestoetsen/WASD: Snake bewegen",
         gameOver: "Game Over! Score: "
     },
     en: {
@@ -106,7 +106,7 @@ const texts = {
         clickGame: "Click Game",
         snakeGame: "Snake Game",
         esc: "ESC: Stop game / Game Over",
-        arrows: "Arrow keys: Move Snake",
+        arrows: "Arrow keys/WASD: Move Snake",
         gameOver: "Game Over! Score: "
     }
 };
@@ -118,7 +118,7 @@ function updateLanguage(){
     document.getElementById("clickBtnStart").innerText = texts[language].clickGame;
     document.getElementById("snakeBtnStart").innerText = texts[language].snakeGame;
     document.getElementById("escExplain").innerHTML = "<strong>ESC:</strong> " + texts[language].esc;
-    document.getElementById("arrowExplain").innerHTML = "<strong>Pijltjestoetsen:</strong> " + texts[language].arrows;
+    document.getElementById("arrowExplain").innerHTML = "<strong>Pijltjestoetsen/WASD:</strong> " + texts[language].arrows;
     if(!gameRunning && document.getElementById("gameOver").style.display==="block"){
         document.getElementById("gameOver").innerText = texts[language].gameOver + score;
     }
@@ -169,23 +169,23 @@ function startSnakeGame(){
     let dir="RIGHT";
 
     // Key controls
-document.addEventListener("keydown", function(e){
-    if(!gameRunning) return;
+    document.addEventListener("keydown", function(e){
+        if(!gameRunning) return;
 
-    // Pijltjestoetsen
-    if(e.key==="ArrowUp" && dir!=="DOWN") dir="UP";
-    if(e.key==="ArrowDown" && dir!=="UP") dir="DOWN";
-    if(e.key==="ArrowLeft" && dir!=="RIGHT") dir="LEFT";
-    if(e.key==="ArrowRight" && dir!=="LEFT") dir="RIGHT";
+        // Pijltjestoetsen
+        if(e.key==="ArrowUp" && dir!=="DOWN") dir="UP";
+        if(e.key==="ArrowDown" && dir!=="UP") dir="DOWN";
+        if(e.key==="ArrowLeft" && dir!=="RIGHT") dir="LEFT";
+        if(e.key==="ArrowRight" && dir!=="LEFT") dir="RIGHT";
 
-    // WASD toetsen
-    if((e.key==="w" || e.key==="W") && dir!=="DOWN") dir="UP";
-    if((e.key==="s" || e.key==="S") && dir!=="UP") dir="DOWN";
-    if((e.key==="a" || e.key==="A") && dir!=="RIGHT") dir="LEFT";
-    if((e.key==="d" || e.key==="D") && dir!=="LEFT") dir="RIGHT";
+        // WASD toetsen
+        if((e.key==="w" || e.key==="W") && dir!=="DOWN") dir="UP";
+        if((e.key==="s" || e.key==="S") && dir!=="UP") dir="DOWN";
+        if((e.key==="a" || e.key==="A") && dir!=="RIGHT") dir="LEFT";
+        if((e.key==="d" || e.key==="D") && dir!=="LEFT") dir="RIGHT";
 
-    if(e.key==="Escape") stopGame();
-});
+        if(e.key==="Escape") stopGame();
+    });
 
     // Touch controls
     const touchDiv = document.createElement("div");
@@ -196,7 +196,10 @@ document.addEventListener("keydown", function(e){
         let btn=document.createElement("button");
         btn.className="touchBtn";
         btn.innerText=arrowSymbols[i];
-        btn.onclick = ()=>{ if(dir!==opposite(d)) dir=d; };
+        btn.addEventListener("touchstart",(e)=>{
+            e.preventDefault(); // voorkomt scrollen
+            if(dir!==opposite(d)) dir=d;
+        });
         touchDiv.appendChild(btn);
     });
     document.getElementById("gameContainer").appendChild(touchDiv);
@@ -212,7 +215,7 @@ document.addEventListener("keydown", function(e){
         for(let i=0;i<snake.length;i++){
             ctx.fillStyle="green";
             ctx.fillRect(snake[i].x, snake[i].y, box, box);
-            // Tong
+            // Tong (soms)
             if(i===snake.length-1 && Math.random()<0.5){
                 ctx.fillStyle="red";
                 ctx.fillRect(snake[i].x+box-5, snake[i].y+5,5,5);
@@ -245,7 +248,7 @@ document.addEventListener("keydown", function(e){
         }
 
         snake.push(newHead);
-        if(gameRunning) setTimeout(draw,100);
+        if(gameRunning) setTimeout(draw,150); // snelheid
     }
     draw();
 }
@@ -259,9 +262,6 @@ function stopGame(){
     document.getElementById("gameOver").innerText=texts[language].gameOver+score;
     document.getElementById("startScreen").style.display="block";
 }
-
-// ESC global
-document.addEventListener('keydown', e=>{ if(e.key==="Escape" && gameRunning) stopGame(); });
 
 </script>
 </body>
