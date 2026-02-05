@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShadowDev Games</title>
+<link rel="icon" href="favicon.png">
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:linear-gradient(135deg,#020617,#0f172a);
+  color:white;
+}
+button{
+  background:#38bdf8;
+  border:none;
+  padding:10px 16px;
+  border-radius:6px;
+  cursor:pointer;
+  font-weight:bold;
+}
+button:hover{background:#0ea5e9;}
+header{
+  background:#020617;
+  padding:20px;
+  text-align:center;
+  border-bottom:2px solid #38bdf8;
+  position:relative;
+}
+#lang{
+  position:absolute;
+  right:15px;
+  top:15px;
+}
+.flag{
+  width:30px;
+  cursor:pointer;
+  margin-left:5px;
+  border:1px solid #38bdf8;
+}
+.container{
+  max-width:1000px;
+  margin:auto;
+  padding:20px;
+}
+.games{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:20px;
+}
+.game{
+  background:#020617;
+  padding:15px;
+  border-radius:10px;
+  text-align:center;
+}
+.gameImg{
+  width:120px;
+  height:120px;
+  object-fit:contain;
+  background:white;
+  border-radius:8px;
+  border:1px solid #38bdf8;
+}
+#overlay{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:black;
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:99;
+}
+.gameBox{
+  display:none;
+  text-align:center;
+}
+#gameOver{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.9);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:100;
+}
+#gameOver div{
+  background:#020617;
+  padding:25px;
+  border-radius:10px;
+  border:2px solid #38bdf8;
+  text-align:center;
+}
+canvas{
+  background:black;
+  display:block;
+  margin:auto;
+}
+form{
+  background:#020617;
+  padding:15px;
+  border-radius:10px;
+  border:1px solid #38bdf8;
+  margin-top:30px;
+}
+input,textarea{
+  width:100%;
+  padding:8px;
+  margin-bottom:10px;
+  background:#111;
+  color:white;
+  border:1px solid #38bdf8;
+  border-radius:6px;
+}
+footer{
+  text-align:center;
+  margin:30px;
+  color:#aaa;
+}
+.ad-box{
+  margin:20px auto;
+  text-align:center;
+}
+</style>
+</head>
+
+<body>
+<header>
+<h1 id="title">🎮 ShadowDev Games</h1>
+<p id="subtitle">Speel gratis games</p>
+
+<!-- Google AdSense banner -->
+<div class="ad-box">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-XXXXXXXXXXXXXXX"
+     data-ad-slot="1234567890"
+     data-ad-format="auto"></ins>
+<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</div>
+
+<div id="lang">
+<img src="images/nl.png" class="flag" onclick="setLang('nl')">
+<img src="images/gb.png" class="flag" onclick="setLang('en')">
+</div>
+</header>
+
+<div class="container" id="menu">
+<h2 id="gamesText">Games</h2>
+<div class="games">
+  <div class="game">
+    <img src="images/games/snake.png" class="gameImg">
+    <h3>Snake</h3>
+    <button onclick="startSnake()" class="playBtn">Play</button>
+  </div>
+  <div class="game">
+    <img src="images/games/clicker.png" class="gameImg">
+    <h3>Clicker</h3>
+    <button onclick="startClicker()" class="playBtn">Play</button>
+  </div>
+  <div class="game">
+    <img src="images/games/pong.png" class="gameImg">
+    <h3>Pong</h3>
+    <button onclick="startPong()" class="playBtn">Play</button>
+  </div>
+</div>
+
+<!-- AdSense tussen games -->
+<div class="ad-box">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-XXXXXXXXXXXXXXX"
+     data-ad-slot="9876543210"
+     data-ad-format="auto"></ins>
+<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</div>
+</div>
+
+<!-- Overlay voor games -->
+<div id="overlay">
+<div id="snake" class="gameBox">
+<h2>Snake</h2>
+<canvas id="snakeC" width="400" height="400"></canvas>
+<br>
+<button onclick="closeGame()">Back</button>
+</div>
+
+<div id="clicker" class="gameBox">
+<h2>Clicker</h2>
+<h3 id="score">0</h3>
+<p>Upgrade kost 10 punten</p>
+<button onclick="clickBtn()">CLICK</button>
+<button onclick="upgrade()">Upgrade</button>
+<br><br>
+<button onclick="closeGame()">Back</button>
+</div>
+
+<div id="pong" class="gameBox">
+<h2>Pong</h2>
+<canvas id="pongC" width="500" height="300"></canvas>
+<br>
+<button onclick="closeGame()">Back</button>
+</div>
+</div>
+
+<div id="gameOver">
+<div>
+<h1 id="overText">Game Over</h1>
+<button onclick="closeGame()">OK</button>
+</div>
+</div>
+
+<div class="container">
+<h2 id="fbTitle">Feedback</h2>
+<form name="feedback" method="POST" data-netlify="true">
+<input type="hidden" name="form-name" value="feedback">
+<input name="name" placeholder="Naam" required>
+<textarea name="msg" placeholder="Bericht" required></textarea>
+<button>Send</button>
+</form>
+</div>
+
+<footer>© ShadowDev Games</footer>
+
+<script>
+/* ===== TRANSLATE ===== */
+const langData={
+nl:{title:"🎮 ShadowDev Games", subtitle:"Speel gratis games", games:"Games", play:"Play", over:"Game Over", fb:"Feedback"},
+en:{title:"🎮 ShadowDev Games", subtitle:"Play free games", games:"Games", play:"Play", over:"Game Over", fb:"Feedback"}
+};
+function setLang(l){
+document.getElementById("title").innerText=langData[l].title;
+document.getElementById("subtitle").innerText=langData[l].subtitle;
+document.getElementById("gamesText").innerText=langData[l].games;
+document.getElementById("overText").innerText=langData[l].over;
+document.getElementById("fbTitle").innerText=langData[l].fb;
+document.querySelectorAll(".playBtn").forEach(b=>{b.innerText=langData[l].play;});
+}
+
+/* ===== GENERAL ===== */
+const menu=document.getElementById("menu");
+const overlay=document.getElementById("overlay");
+const gameOver=document.getElementById("gameOver");
+let snakeLoop,pongLoop;
+
+/* Close game */
+function closeGame(){
+clearInterval(snakeLoop);
+clearInterval(pongLoop);
+overlay.style.display="none";
+gameOver.style.display="none";
+document.querySelectorAll(".gameBox").forEach(g=>{g.style.display="none";});
+menu.style.display="block";
+}
+
+/* ===== SNAKE ===== */
+function startSnake(){
+menu.style.display="none";
+overlay.style.display="flex";
+document.getElementById("snake").style.display="block";
+
+const c=document.getElementById("snakeC");
+const ctx=c.getContext("2d");
+let size=20;
+let snake=[{x:200,y:200}];
+let dir="RIGHT";
+let food={x:Math.floor(Math.random()*20)*size, y:Math.floor(Math.random()*20)*size};
+document.onkeydown=e=>{
+if(e.key=="ArrowUp" && dir!="DOWN") dir="UP";
+if(e.key=="ArrowDown" && dir!="UP") dir="DOWN";
+if(e.key=="ArrowLeft" && dir!="RIGHT") dir="LEFT";
+if(e.key=="ArrowRight" && dir!="LEFT") dir="RIGHT";
+};
+snakeLoop=setInterval(()=>{
+ctx.clearRect(0,0,400,400);
+snake.forEach(s=>{ctx.fillStyle="lime";ctx.fillRect(s.x,s.y,size,size);});
+ctx.fillStyle="red"; ctx.fillRect(food.x,food.y,size,size);
+
+let x=snake[0].x, y=snake[0].y;
+if(dir=="UP") y-=size;
+if(dir=="DOWN") y+=size;
+if(dir=="LEFT") x-=size;
+if(dir=="RIGHT") x+=size;
+
+// check collision with self
+for(let part of snake){
+  if(part.x===x && part.y===y){
+    clearInterval(snakeLoop);
+    gameOver.style.display="flex";
+    return;
+  }
+}
+
+snake.unshift({x,y});
+if(x===food.x && y===food.y){
+  food={x:Math.floor(Math.random()*20)*size, y:Math.floor(Math.random()*20)*size};
+}else snake.pop();
+
+// check wall collision
+if(x<0||x>=400||y<0||y>=400){
+  clearInterval(snakeLoop);
+  gameOver.style.display="flex";
+  return;
+}
+
+},120);
+}
+
+/* ===== CLICKER ===== */
+let score=0, clickValue=1, upgradeCost=10;
+function startClicker(){
+menu.style.display="none";
+overlay.style.display="flex";
+document.getElementById("clicker").style.display="block";
+score=0; clickValue=1; upgradeCost=10;
+updateClicker();
+}
+function clickBtn(){score+=clickValue; updateClicker();}
+function upgrade(){
+if(score>=upgradeCost){score-=upgradeCost; clickValue++; upgradeCost+=10; updateClicker();}
+}
+function updateClicker(){
+document.getElementById("score").innerText=`Score: ${score} | Klik waarde: ${clickValue} | Upgrade kost: ${upgradeCost}`;
+}
+
+/* ===== PONG ===== */
+function startPong(){
+menu.style.display="none";
+overlay.style.display="flex";
+document.getElementById("pong").style.display="block";
+
+const c=document.getElementById("pongC");
+const ctx=c.getContext("2d");
+
+let ball={x:250,y:150,dx:4,dy:4};
+let p1=120, p2=120;
+
+c.onmousemove=e=>{
+let r=c.getBoundingClientRect();
+p1=e.clientY-r.top-40;
+};
+
+pongLoop=setInterval(()=>{
+ctx.clearRect(0,0,500,300);
+
+// paddles
+ctx.fillStyle="white"; ctx.fillRect(10,p1,10,80);
+ctx.fillRect(480,p2,10,80);
+
+// ball
+ctx.beginPath(); ctx.arc(ball.x,ball.y,8,0,Math.PI*2); ctx.fill();
+
+// ball movement
+ball.x+=ball.dx; ball.y+=ball.dy;
+
+// wall collision
+if(ball.y<0||ball.y>300) ball.dy*=-1;
+
+// paddle collision
+if(ball.x<20 && ball.y>p1 && ball.y<p1+80) ball.dx*=-1;
+if(ball.x>470 && ball.y>p2 && ball.y<p2+80) ball.dx*=-1;
+
+// score reset
+if(ball.x<0 || ball.x>500) ball={x:250,y:150,dx:4,dy:4};
+
+// AI paddle
+p2 += ((ball.y-(p2+40))*0.05);
+
+},20);
+}
+</script>
+</body>
+</html>
