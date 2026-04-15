@@ -378,6 +378,21 @@ p2 += ((ball.y-(p2+40))*0.05);
 },20);
 }
 </script>
+/* ===== TRANSLATE ===== */
+const langData={
+nl:{title:"🎮 ShadowDev Games", subtitle:"Speel gratis games", games:"Games", play:"Play", over:"Game Over", fb:"Feedback"},
+en:{title:"🎮 ShadowDev Games", subtitle:"Play free games", games:"Games", play:"Play", over:"Game Over", fb:"Feedback"}
+};
+
+function setLang(l){
+document.getElementById("title").innerText=langData[l].title;
+document.getElementById("subtitle").innerText=langData[l].subtitle;
+document.getElementById("gamesText").innerText=langData[l].games;
+document.getElementById("overText").innerText=langData[l].over;
+document.getElementById("fbTitle").innerText=langData[l].fb;
+document.querySelectorAll(".playBtn").forEach(b=>{b.innerText=langData[l].play;});
+}
+
 /* ===== FEEDBACK ===== */
 document.getElementById("feedbackForm").addEventListener("submit", function(e){
   e.preventDefault();
