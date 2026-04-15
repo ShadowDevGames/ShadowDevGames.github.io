@@ -222,11 +222,10 @@ footer{
 
 <div class="container">
 <h2 id="fbTitle">Feedback</h2>
-<form name="feedback" method="POST" data-netlify="true">
-<input type="hidden" name="form-name" value="feedback">
+<form id="feedbackForm">
 <input name="name" placeholder="Naam" required>
 <textarea name="msg" placeholder="Bericht" required></textarea>
-<button>Send</button>
+<button type="submit">Send</button>
 </form>
 </div>
 
@@ -378,6 +377,30 @@ p2 += ((ball.y-(p2+40))*0.05);
 
 },20);
 }
+</script>
+/* ===== FEEDBACK ===== */
+document.getElementById("feedbackForm").addEventListener("submit", function(e){
+  e.preventDefault();
+
+  const name = document.querySelector("input[name='name']").value;
+  const msg = document.querySelector("textarea[name='msg']").value;
+
+  fetch("http://192.168.2.53:5000/feedback", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ name, msg })
+  })
+  .then(res => res.json())
+  .then(() => {
+    alert("Feedback verzonden!");
+    document.getElementById("feedbackForm").reset();
+  })
+  .catch(() => {
+    alert("Server niet bereikbaar");
+  });
+});
 </script>
 </body>
 </html>
